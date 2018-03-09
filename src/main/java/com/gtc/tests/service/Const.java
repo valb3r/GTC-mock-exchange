@@ -10,5 +10,5 @@ public final class Const {
 
     public static final int MAX_DECIMAL = 10;
     public static final int PRECISION = 5;
-    public static final String MIN = "0.00001";
+    public static final String MIN = "0.0001";
 }
