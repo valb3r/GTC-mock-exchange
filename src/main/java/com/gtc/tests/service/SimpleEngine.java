@@ -78,7 +78,7 @@ public class SimpleEngine {
 
     private static void update(Order order, BigDecimal newAmount, Map<Order, Order> updates) {
         Order.Status status = order.getStatus();
-        if (BigDecimal.ZERO.equals(newAmount)) {
+        if (BigDecimal.ZERO.compareTo(newAmount) == 0) {
             status = Order.Status.DONE;
         }
 
