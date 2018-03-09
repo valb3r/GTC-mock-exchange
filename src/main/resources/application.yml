@@ -1,0 +1,16 @@
+spring:
+    application:
+        name: gtc-mock-exchange
+    jackson:
+        property-naming-strategy: SNAKE_CASE
+        locale: en_US
+        serialization:
+            fail-on-empty-beans: false
+            write_dates_as_timestamps: false
+server:
+    servlet-path: /api
+    port: 9090
+app:
+    schedule:
+        engineProcessMs: 20
+        pingMs: 1000

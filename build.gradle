@@ -1,0 +1,79 @@
+group 'com.gtc.tests'
+version '1.0-SNAPSHOT'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.0'
+    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
+}
+
+buildscript {
+    ext {
+        versions = [
+                springBoot                : "1.5.9.RELEASE",
+                springDependencyManagement: "0.6.0.RELEASE",
+                guava                     : "21.0",
+                reactivex                 : "2.0.0",
+                wsClient                  : "master-SNAPSHOT",
+                newRelicAPI               : "3.4.1",
+                commonsCodec              : "1.9",
+                junit                     : "4.12",
+                mockito                   : "1.10.19",
+                assertJ                   : "3.9.0",
+                aspectjOAP                : "1.8.12",
+                validator                 : "5.4.1.Final",
+                swagger                   : "2.7.0",
+                tokenBucket               : "1.6",
+                cqengine                  : "2.12.4"
+        ]
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${versions.springBoot}"
+        classpath "io.spring.gradle:dependency-management-plugin:${versions.springDependencyManagement}"
+    }
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compileOnly "org.projectlombok:lombok"
+
+    compile "org.springframework.boot:spring-boot-configuration-processor"
+    compile "org.springframework.boot:spring-boot-starter-web"
+    compile "org.springframework.boot:spring-boot-starter-aop"
+    compile "org.springframework.boot:spring-boot-starter-websocket"
+    compile "com.google.guava:guava:${versions.guava}"
+    compile "org.hibernate:hibernate-validator:${versions.validator}"
+    compile "org.isomorphism:token-bucket:${versions.tokenBucket}"
+    compile "com.googlecode.cqengine:cqengine:${versions.cqengine}"
+
+    compile "io.springfox:springfox-swagger2:${versions.swagger}"
+    compile "io.springfox:springfox-swagger-ui:${versions.swagger}"
+
+    testCompile "junit:junit:${versions.junit}"
+    testCompile "org.mockito:mockito-all:${versions.mockito}"
+    testCompile "org.assertj:assertj-core:${versions.assertJ}"
+    testCompileOnly "org.projectlombok:lombok:"
+}
+
+jar {
+    baseName = "mock-exchange"
+    version = project.version
+    archiveName = "mock-exchange.jar"
+}
+
+bootRun {
+    systemProperties System.properties
+}
