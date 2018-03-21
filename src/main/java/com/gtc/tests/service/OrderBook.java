@@ -90,7 +90,7 @@ public class OrderBook {
                 key,
                 and(
                         isSell ? greaterThan(Order.AMOUNT, BigDecimal.ZERO) : lessThan(Order.AMOUNT, BigDecimal.ZERO),
-                        isSell ? greaterThan(Order.PRICE, order.getPrice()) : lessThan(Order.PRICE, order.getPrice()),
+                        isSell ? greaterThanOrEqualTo(Order.PRICE, order.getPrice()) : lessThanOrEqualTo(Order.PRICE, order.getPrice()),
                         not(equal(Order.AMOUNT, BigDecimal.ZERO)),
                         equal(Order.STATUS, Order.Status.OPEN)
                 ),
