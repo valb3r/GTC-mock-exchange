@@ -51,12 +51,12 @@ public class SimpleEngine {
 
         BigDecimal amount = target.getAmount();
         for (Order with : satisfiers) {
-            BigDecimal charged = satisfyPair(amount, with);
-            sendToWallet(key, target, charged);
-            sendToWallet(key, with, charged);
+            BigDecimal toTransfer = satisfyPair(amount, with);
+            sendToWallet(key, target, toTransfer);
+            sendToWallet(key, with, toTransfer);
 
-            amount = amount.add(charged);
-            BigDecimal withAmount = with.getAmount().subtract(charged);
+            amount = amount.add(toTransfer);
+            BigDecimal withAmount = with.getAmount().subtract(toTransfer);
             update(with, withAmount, toUpdate);
             if (BigDecimal.ZERO.equals(amount)) {
                 break;
@@ -91,11 +91,11 @@ public class SimpleEngine {
         BigDecimal toProcess = amount.abs();
         // sell BTC in BTC/USD
         if (BigDecimal.ZERO.compareTo(order.getAmount()) > 0) {
-            walletService.deposit(key.getExchangeId(), order.getClientId(), key.getPair().getTo(),
+            walletService.depositWithFee(key, order.getClientId(), key.getPair().getTo(),
                     toProcess.multiply(order.getPrice()));
             return;
         }
         // buy BTC in BTC/USD
-        walletService.deposit(key.getExchangeId(), order.getClientId(), key.getPair().getFrom(), toProcess);
+        walletService.depositWithFee(key, order.getClientId(), key.getPair().getFrom(), toProcess);
     }
 }

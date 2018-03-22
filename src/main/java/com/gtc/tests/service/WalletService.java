@@ -1,7 +1,9 @@
 package com.gtc.tests.service;
 
+import com.gtc.tests.domain.ExchangeKey;
 import com.gtc.tests.dto.TradingCurrency;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,9 +14,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by Valentyn Berezin on 08.03.18.
  */
 @Service
+@RequiredArgsConstructor
 public class WalletService {
 
     private final Map<Key, Map<TradingCurrency, BigDecimal>> byClientByCurrencyWallet = new ConcurrentHashMap<>();
+
+    private final ConfigRegistry configRegistry;
 
     public void deposit(String exchangeId, String client, TradingCurrency currency, BigDecimal amount) {
         byClientByCurrencyWallet
@@ -35,6 +40,11 @@ public class WalletService {
 
                     return avail.subtract(amount);
                 });
+    }
+
+    public void depositWithFee(ExchangeKey key, String client, TradingCurrency currency, BigDecimal amount) {
+        BigDecimal coef = BigDecimal.ONE.subtract(configRegistry.get(key).getTradeFeePct().scaleByPowerOfTen(-2));
+        deposit(key.getExchangeId(), client, currency, amount.multiply(coef));
     }
 
     public Map<TradingCurrency, BigDecimal> balances(String exchangeId, String client) {
