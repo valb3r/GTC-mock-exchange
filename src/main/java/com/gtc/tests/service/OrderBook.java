@@ -84,6 +84,14 @@ public class OrderBook {
         );
     }
 
+    public List<Order> allOrders(ExchangeKey key) {
+        return executeQuery(
+                key,
+                all(Order.class),
+                queryOptions(orderBy(ascending(Order.TSTMP)))
+        );
+    }
+
     public List<Order> matchingOrders(ExchangeKey key, Order order) {
         boolean isSell = BigDecimal.ZERO.compareTo(order.getAmount()) > 0;
         return executeQuery(

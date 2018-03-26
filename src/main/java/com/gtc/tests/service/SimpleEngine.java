@@ -38,11 +38,13 @@ public class SimpleEngine {
             Map<Order, Order> updates = doSatisfy(key, freshOrder, orderBook.matchingOrders(key, freshOrder));
             if (!updates.isEmpty()) {
                 updates.forEach((old, upd) -> orderBook.updateOrder(key, old, upd));
-                orderBook.updateTicker(key, order.getPrice());
+                orderBook.updateTicker(key, freshOrder.getPrice());
 
                 updates.values().forEach(it ->
                         subscribedTo.notifyOrder(key, it.getPrice(), it.getAmount(), it.isSell())
                 );
+                subscribedTo.notifyOrder(key, freshOrder.getPrice(), freshOrder.getAmount(), freshOrder.isSell());
+                
                 subscribedTo.notifyTicker(key, orderBook.ticker(key));
             }
         });
