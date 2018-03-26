@@ -17,6 +17,7 @@ import static com.googlecode.cqengine.query.QueryFactory.attribute;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"id", "version"})
+@ToString
 public class Order {
 
     private static final AtomicLong VERSION_GENERATOR = new AtomicLong();

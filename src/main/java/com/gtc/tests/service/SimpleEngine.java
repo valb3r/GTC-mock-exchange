@@ -3,6 +3,7 @@ package com.gtc.tests.service;
 import com.gtc.tests.domain.ExchangeKey;
 import com.gtc.tests.domain.Order;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -16,6 +17,7 @@ import java.util.Map;
 /**
  * Created by Valentyn Berezin on 08.03.18.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SimpleEngine {
@@ -31,7 +33,9 @@ public class SimpleEngine {
 
     private void processBook(ExchangeKey key) {
         orderBook.activeOrders(key).forEach(order -> {
-            Map<Order, Order> updates = doSatisfy(key, order, orderBook.matchingOrders(key, order));
+            Order freshOrder = orderBook.byId(key.getExchangeId(), order.getClientId(), order.getId())
+                    .orElseThrow(() -> new IllegalStateException("Lost order"));
+            Map<Order, Order> updates = doSatisfy(key, freshOrder, orderBook.matchingOrders(key, freshOrder));
             if (!updates.isEmpty()) {
                 updates.forEach((old, upd) -> orderBook.updateOrder(key, old, upd));
                 orderBook.updateTicker(key, order.getPrice());
@@ -43,7 +47,7 @@ public class SimpleEngine {
     }
 
     private Map<Order, Order> doSatisfy(ExchangeKey key, Order target, List<Order> satisfiers) {
-        if (satisfiers.isEmpty()) {
+        if (satisfiers.isEmpty() || Order.Status.DONE == target.getStatus()) {
             return Collections.emptyMap();
         }
 
@@ -51,13 +55,17 @@ public class SimpleEngine {
 
         BigDecimal amount = target.getAmount();
         for (Order with : satisfiers) {
+            log.info("Satisfy {} with {}", target, with);
             BigDecimal toTransfer = satisfyPair(amount, with);
             sendToWallet(key, target, toTransfer);
             sendToWallet(key, with, toTransfer);
 
+            log.info("Amount to transact {}", toTransfer);
+
             amount = amount.add(toTransfer);
             BigDecimal withAmount = with.getAmount().subtract(toTransfer);
             update(with, withAmount, toUpdate);
+            log.info("Amount left {}", amount);
             if (BigDecimal.ZERO.equals(amount)) {
                 break;
             }
@@ -77,8 +85,10 @@ public class SimpleEngine {
     }
 
     private static void update(Order order, BigDecimal newAmount, Map<Order, Order> updates) {
+        log.info("Updating {} given amount {}", order, newAmount);
         Order.Status status = order.getStatus();
         if (BigDecimal.ZERO.compareTo(newAmount) == 0) {
+            log.info("Updating {} as DONE", order);
             status = Order.Status.DONE;
         }
 

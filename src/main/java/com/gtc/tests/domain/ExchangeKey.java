@@ -4,6 +4,7 @@ import com.gtc.tests.dto.TradingPair;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Created by Valentyn Berezin on 08.03.18.
@@ -11,6 +12,7 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode
 @AllArgsConstructor
+@ToString
 public class ExchangeKey {
 
     private final String exchangeId;

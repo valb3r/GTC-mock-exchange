@@ -4,6 +4,7 @@ import com.gtc.tests.domain.ExchangeKey;
 import com.gtc.tests.dto.TradingCurrency;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by Valentyn Berezin on 08.03.18.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WalletService {
@@ -24,9 +26,10 @@ public class WalletService {
     public void deposit(String exchangeId, String client, TradingCurrency currency, BigDecimal amount) {
         byClientByCurrencyWallet
                 .computeIfAbsent(new Key(exchangeId, client), id -> new ConcurrentHashMap<>())
-                .compute(currency, (key, avail) ->
-                    null == avail ? amount : avail.add(amount)
-                );
+                .compute(currency, (key, avail) -> {
+                    log.info("Deposit {}.{}.{} amount {} (avail {})", exchangeId, client, currency, amount, avail);
+                    return null == avail ? amount : avail.add(amount);
+                });
     }
 
     public void withdraw(String exchangeId, String client, TradingCurrency currency, BigDecimal amount) {
@@ -38,6 +41,7 @@ public class WalletService {
                         throw new IllegalStateException("Insufficient funds");
                     }
 
+                    log.info("Withdraw {}.{}.{} amount {} (avail {})", exchangeId, client, currency, amount, avail);
                     return avail.subtract(amount);
                 });
     }
