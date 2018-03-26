@@ -39,7 +39,7 @@ public class SubsRegistry {
                 .computeIfAbsent(subsType, id -> ConcurrentHashMap.newKeySet())
                 .add(new Subs(session.getId(), session));
 
-        orderBook.activeOrders(key).forEach(it -> notifyOrder(key, it.getPrice(), it.getAmount()));
+        orderBook.activeOrders(key).forEach(it -> notifyOrder(key, it.getPrice(), it.getAmount(), it.isSell()));
     }
 
     public void unsubscribe(WebSocketSession session) {
@@ -52,8 +52,8 @@ public class SubsRegistry {
         notify(key, SubsType.TICKER, new TickerDto(key.getPair().toString(), ticker));
     }
 
-    public void notifyOrder(ExchangeKey key, BigDecimal price, BigDecimal amount) {
-        notify(key, SubsType.BOOK, new BookDto(key.getPair().toString(), price, amount));
+    public void notifyOrder(ExchangeKey key, BigDecimal price, BigDecimal amount, boolean isSell) {
+        notify(key, SubsType.BOOK, new BookDto(isSell, key.getPair().toString(), price, amount));
     }
 
     @Scheduled(fixedRateString = "${app.schedule.pingMs}")

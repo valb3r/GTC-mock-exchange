@@ -40,13 +40,14 @@ public class TradeCreationService {
                         client,
                         trade.getPrice(),
                         trade.isSell() ? trade.getAmount().negate() : trade.getAmount(),
+                        trade.isSell(),
                         Order.Status.OPEN,
                         trade.getPair()
                 ));
 
         walletService.withdraw(exchangeId, client, currency, amount);
 
-        subscribers.notifyOrder(key, result.getPrice(), result.getAmount());
+        subscribers.notifyOrder(key, result.getPrice(), result.getAmount(), result.isSell());
         return result;
     }
 

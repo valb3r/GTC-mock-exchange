@@ -40,7 +40,9 @@ public class SimpleEngine {
                 updates.forEach((old, upd) -> orderBook.updateOrder(key, old, upd));
                 orderBook.updateTicker(key, order.getPrice());
 
-                updates.values().forEach(it -> subscribedTo.notifyOrder(key, it.getPrice(), it.getAmount()));
+                updates.values().forEach(it ->
+                        subscribedTo.notifyOrder(key, it.getPrice(), it.getAmount(), it.isSell())
+                );
                 subscribedTo.notifyTicker(key, orderBook.ticker(key));
             }
         });

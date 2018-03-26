@@ -35,6 +35,7 @@ public class Order {
     private final String clientId;
     private final BigDecimal price;
     private final BigDecimal amount;
+    private final boolean isSell;
     private final Status status;
     private final TradingPair pair;
     private final long timestamp = System.currentTimeMillis();
