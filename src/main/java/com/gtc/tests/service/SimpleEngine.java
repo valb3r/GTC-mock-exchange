@@ -33,21 +33,33 @@ public class SimpleEngine {
 
     private void processBook(ExchangeKey key) {
         orderBook.activeOrders(key).forEach(order -> {
-            Order freshOrder = orderBook.byId(key.getExchangeId(), order.getClientId(), order.getId())
-                    .orElseThrow(() -> new IllegalStateException("Lost order"));
+            Order freshOrder = upToDateOrder(key, order);
             Map<Order, Order> updates = doSatisfy(key, freshOrder, orderBook.matchingOrders(key, freshOrder));
             if (!updates.isEmpty()) {
                 updates.forEach((old, upd) -> orderBook.updateOrder(key, old, upd));
                 orderBook.updateTicker(key, freshOrder.getPrice());
 
-                updates.values().forEach(it ->
-                        subscribedTo.notifyOrder(key, it.getPrice(), it.getAmount(), it.isSell())
-                );
-                subscribedTo.notifyOrder(key, freshOrder.getPrice(), freshOrder.getAmount(), freshOrder.isSell());
-                
+                // report done 1st and then leftovers
+                updates.values().stream()
+                        .filter(it -> Order.Status.DONE == it.getStatus())
+                        .forEach(it -> notifyOrder(key, it));
+
+                updates.values().stream()
+                        .filter(it -> Order.Status.DONE != it.getStatus())
+                        .forEach(it -> notifyOrder(key, it));
+
                 subscribedTo.notifyTicker(key, orderBook.ticker(key));
             }
         });
+    }
+
+    private void notifyOrder(ExchangeKey key, Order order) {
+        subscribedTo.notifyOrder(key, order.getPrice(), order.getAmount(), order.isSell());
+    }
+
+    private Order upToDateOrder(ExchangeKey key, Order order) {
+        return orderBook.byId(key.getExchangeId(), order.getClientId(), order.getId())
+                .orElseThrow(() -> new IllegalStateException("Lost order"));
     }
 
     private Map<Order, Order> doSatisfy(ExchangeKey key, Order target, List<Order> satisfiers) {
