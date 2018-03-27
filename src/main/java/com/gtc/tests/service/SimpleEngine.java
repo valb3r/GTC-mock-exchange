@@ -44,11 +44,11 @@ public class SimpleEngine {
                         .filter(it -> Order.Status.DONE == it.getStatus())
                         .forEach(it -> notifyOrder(key, it));
 
+                subscribedTo.notifyTicker(key, orderBook.ticker(key));
+
                 updates.values().stream()
                         .filter(it -> Order.Status.DONE != it.getStatus())
                         .forEach(it -> notifyOrder(key, it));
-
-                subscribedTo.notifyTicker(key, orderBook.ticker(key));
             }
         });
     }
